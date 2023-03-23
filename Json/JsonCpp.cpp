@@ -112,7 +112,7 @@ void JsonCppWFile() {
 }  //JsonCppWFile
 
 int main(int argc, char const* argv[]) {
-	//请勿更改两个函数的顺序，因为JsonCpp在写Json时会对元素进行排序
+	//JsonCpp在写Json时会对元素进行排序,所以不要更改这两个函数的位置
 	JsonCppWFile();
 	JsonCppRFile();
 	return 0;
