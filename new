@@ -1,0 +1,110 @@
+//C语言文件读写基础操作
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <string.h>
+
+enum Statu { OpenSucess = 0, OpenErr, CloseSucess, CloseErr, fpIsNull };
+
+//文件的打开|文件流的获取 fopen
+Statu openFile(FILE* fp, const char* path, const char* mode) {
+	fp = fopen(path, mode);
+	if (fp == NULL) {
+		perror("fopen::OpenFileErr::");
+		return OpenErr;
+	}
+	return OpenSucess;
+}  //openFile
+
+//文件的关闭
+Statu closeFile(FILE* fp) {
+	if (fp == NULL) {
+		return fpIsNull;
+	}
+	//文件作为一种资源，当不使用文件时应及时关闭，
+	//以减少系统开销并且可以避免文件打开过多引起的不必要的问题
+	int closeFileRet = fclose(fp);
+	fp = NULL;
+	if (closeFileRet == 0) {
+		return CloseSucess;
+	}
+	else if(closeFileRet == EOF) {
+		return CloseErr;
+	}
+}  //closeFile
+
+//读写分三类：标准输入输出读写、文件读写、字符串读写
+//标准输入输出读写：printf、scanf
+//文件的读写函数：一个字符(fgetc、fputc)、读一行(fgets、fputs)、任意字节数读写(fread、fwrite)
+void RWFuncForCopyFile(const char* path, int i) {
+	//想说一点是什么呢。因为r、w互斥，因此建议读写分家。非必要不要对同一个文件同时进行读写
+	char* srcFilePath = _strdup(path);
+	printf(" %s\n", srcFilePath);
+	FILE* fpR = fopen(srcFilePath, "r");
+	//char* srcTmpFilePath = strtok(srcFilePath, ".t");
+	//char* destFilePath = strcat(srcTmpFilePath, "1.txt");
+	
+	char destFilePath[256] = {0};
+	strncat(destFilePath, srcFilePath, strlen(srcFilePath) - 4);
+	strncat(destFilePath, "Copy.txt", 20);
+	printf(" %s\n", destFilePath);
+	FILE* fpW = fopen(destFilePath, "w");
+	if (fpR == NULL) {
+		perror("RWFuncForCopyFile::fopenMsg::");
+		return;
+	}
+	if (fpR == NULL || fpW == NULL) {
+		perror("RWFuncForCopyFile::fopenMsg::");
+		return;
+	}
+
+	switch (i) {
+	case 1:
+		printf("FTmp::RWFuncForCopyFile::case1");
+		int getValue;
+		while ((getValue = fgetc(fpR)) != EOF) {
+			fputc(getValue, fpW);
+		}
+		break;
+	case 2:
+		printf("FTmp::RWFuncForCopyFile::case2");
+		char buffer[1024];
+		while (fgets(buffer, 1000, fpR) != NULL) {
+			fputs(buffer, fpW);
+		}
+		break;
+	case 3:
+		printf("FTmp::RWFuncForCopyFile::case3");
+		char buffer1[1024];
+		while (fread(buffer1, 1, 1000, fpR)) {
+			fwrite(buffer1, 1, 1000, fpW);
+		}
+		break;
+	}
+
+	fclose(fpR);
+	fclose(fpW);
+	fpR = NULL;
+	fpW = NULL;
+}  //RWFuncForCopyFile
+
+//文件的二进制读写 b模式打开文件
+void RWFuncForBinary(const char* path) {
+
+}  //RWFuncForBinary
+
+//文件的随机读写(fseek、ftell)
+void RWFuncForRandom(const char* path) {
+
+}  //RWFuncForRandom
+
+int main(int argc, char const* argv[]) {
+	//char path = "./test.txt";
+	char path[] = "./splog.txt";
+
+	FILE* fp = NULL;
+	openFile(fp, path, "r");
+	closeFile(fp);
+
+	RWFuncForCopyFile(path, 3);
+	return 0;
+}  //main
