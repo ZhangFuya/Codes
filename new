@@ -94,7 +94,37 @@ void RWFuncForBinary(const char* path) {
 
 //文件的随机读写(fseek、ftell)
 void RWFuncForRandom(const char* path) {
+	char filepath[256] = "./filp.txt";
+	printf("FTmp::filepath::%s\n", filepath);
+	FILE* fp = fopen(filepath, "r+");
+	if (fp == NULL) {
+		perror("FTmp::RWFuncForRandom::fopen");
+		return;
+	}
+	fseek(fp, 0, SEEK_END);
+	long fileLen = ftell(fp);
+	printf("FTmp::RWFuncForRandom::len::%d\n", fileLen);
 
+	int setChr = 0;
+	int endChr = 0;
+	for (long i = 0; i < fileLen / 2; i++) {
+		//fseek(fp, -1 - i, SEEK_END);
+		//chr = fgetc(fp);
+		//printf("FTmp::RWFuncForRandom::chr::%d\n", chr);
+		//fseek(fp, i, SEEK_SET);
+		//fputc(chr, fp);
+		fseek(fp, i, SEEK_SET);
+		setChr = fgetc(fp);
+		fseek(fp, -1 - i, SEEK_END);
+		endChr = fgetc(fp);
+		fseek(fp, -1 - i, SEEK_END);
+		fputc(setChr, fp);
+		fseek(fp, i, SEEK_SET);
+		fputc(endChr, fp);
+	}
+
+	fclose(fp);
+	fp = NULL;
 }  //RWFuncForRandom
 
 int main(int argc, char const* argv[]) {
@@ -105,6 +135,8 @@ int main(int argc, char const* argv[]) {
 	openFile(fp, path, "r");
 	closeFile(fp);
 
-	RWFuncForCopyFile(path, 3);
+	//RWFuncForCopyFile(path, 3);
+
+	RWFuncForRandom(path);
 	return 0;
 }  //main
