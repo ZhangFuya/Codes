@@ -140,3 +140,33 @@ int main(int argc, char const* argv[]) {
 	RWFuncForRandom(path);
 	return 0;
 }  //main
+
+# 介绍
+QSettings 基于 QVariant 的跨会话配置类。
+
+# 构造函数
+QSettings 的构造函数
+
+# 基本使用
+通常，我们读写配置文件有两种基本的方式：按项读写 以及 按组读写。
+涉及到的主要函数为：value 和 setValue。
+```c++
+QSettings cfg(path, QSettings::IniFormat);
+//写入配置项
+cfg.setValue("group/key1", key1_v1);
+cfg.setValue("group/key2", key2_v2);
+//获取配置项
+QVariant value1 = cnf.value("group/key1");
+```
+上述代码清晰直观地展示了 QSettings 用于读写配置文件时的基本操作。同时对 QSettings 我们还应当有着更深入的了解。
+1. 上述代码是在做什么
+我们知道 .ini文件 中的内容由 节、键、值 组成\[节通常又被称为组\]。
+使用 setValue 进行配置项的写入时，第一个参数是
+
+2. 如何进行按组读写
+
+3. 如何简化按组读写操作流程
+
+# 重要补充
+
+# 常用函数
