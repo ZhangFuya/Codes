@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdbool.h>
 
 typedef struct node{
 	int data;
@@ -26,7 +27,7 @@ void linklistPrint(LinkList* list) {
 	printf("\n");
 }  //linklistPrint
 
-unsigned int linklistSize(LinkList* list) {
+unsigned int linklistLength(LinkList* list) {
 	unsigned int size = 0;
 	LinkList* ptrList = list;
 	while (ptrList->nextNode) {
@@ -35,6 +36,60 @@ unsigned int linklistSize(LinkList* list) {
 	}
 	return size;
 }  //linllistSize
+
+void linklistClear(LinkList* list) {
+	LinkList* ptrList = list;
+	LinkList* ptrNode;
+	while (ptrList->nextNode) {
+		ptrNode = ptrList->nextNode;
+		ptrList->nextNode = ptrNode->nextNode;
+		free(ptrNode);
+	}
+	list = NULL;
+}  //linklistClear
+
+bool linklistEmpty(LinkList* list) {
+	if (list->nextNode) return false;
+	return true;
+}  //linklistEmpty
+
+int linklistGetElem(unsigned int pos, LinkList* list) {
+	unsigned int index = 0;
+	LinkList* ptrList = list;
+	while (index++ != pos) {
+		ptrList = ptrList->nextNode;
+	}
+	return ptrList->data;
+}  //linklistGetElem
+
+int linklistGetPrevElem(unsigned int pos, LinkList* list) {
+	unsigned int index = 0;
+	LinkList* ptrList = list;
+	while (index++ != pos - 1) {
+		ptrList = ptrList->nextNode;
+	}
+	return ptrList->data;
+}  //linklistGetPrevElem
+
+int linklistGetNextElem(unsigned int pos, LinkList* list) {
+	unsigned int index = 0;
+	LinkList* ptrList = list;
+	while (index++ != pos + 1) {
+		ptrList = ptrList->nextNode;
+	}
+	return ptrList->data;
+}  //linklistGetNextElem
+
+void linklistDestory(LinkList* list) {
+	LinkList* ptrList = list;
+	LinkList* ptrNode;
+	while (ptrList->nextNode) {
+		ptrNode = ptrList->nextNode;
+		ptrList->nextNode = ptrNode->nextNode;
+		free(ptrNode);
+	}
+	list = NULL;
+}  //linklistDestory
 
 void linklistHeadInsert(int data, LinkList* list) {
 	LinkList* ptrNode = (LinkList*)malloc(sizeof(LinkList));
@@ -144,19 +199,19 @@ int main(int argc, char const* argv[]) {
 	}
 	linlistInsert(2, 30, list);
 	linlistInsert(1, 50, list);
-	linlistInsert(linklistSize(list) + 1, 100, list);
+	linlistInsert(linklistLength(list) + 1, 100, list);
 
 	linklistPrint(list);
 	linklistDelOnPos(2, list);
 	linklistDelOnPos(1, list);
-	linklistDelOnPos(linklistSize(list), list);
+	linklistDelOnPos(linklistLength(list), list);
 	linklistPrint(list);
 	linklistDelOnData(0, list);
 	linklistDelOnData(30, list);
 	linklistDelOnData(9, list);
 
 	linklistModifyOnPos(1, 11, list);
-	linklistModifyOnPos(linklistSize(list), 22, list);
+	linklistModifyOnPos(linklistLength(list), 22, list);
 	linklistModifyOnPos(3, 33, list);
 	linklistPrint(list);
 	linklistModifyOnValue(5, 55, list);
@@ -166,5 +221,13 @@ int main(int argc, char const* argv[]) {
 
 	printf("元素: 22, 所在的位置: %u\n", linklistSearchOnValue(22, list));
 	printf("元素: 222, 所在的位置: %u\n", linklistSearchOnValue(222, list));
+	printf("列表的第 1 个元素是：%d\n", linklistGetElem(1, list));
+	printf("列表的第 3 个元素是：%d\n", linklistGetElem(3, list));
+	printf("列表的第 %d 个元素是：%d\n", linklistLength(list), linklistGetElem(linklistLength(list), list));
+	
+	linklistDestory(list);
+
+
+
 	return 0;
 }  //main
