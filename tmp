@@ -1,193 +1,39 @@
-#if 0
-void TransPage::TransDocThread_Finished() {
-	qDebug() << "TransPage::TransDocThread_Finished::isRun";
-	switch(g_transStatus) {
-	case DTS_TransUnBegin:	//upload finish but unBegin trans
-		m_docTransPace = SelectedDoc;
-		m_docTransThread->setTransFlag(3);
-		ui->rBtnCj->setEnabled(true);
-		ui->rBtnJc->setEnabled(true);
-		ui->rBtnJe->setEnabled(true);
-		ui->rBtnEj->setEnabled(true);
-		ui->pBtnDocTrans->setEnabled(true);
-		tableSetStatuBtn(0, 0, IDI_TABLE_TRANSUNBEGIN);
-		ui->tableDocList->item(g_fileListIndex, 4)->setText(loadRCStr(IDS_TABLE_COLU3_WAIT));
-		tableSetRemoveRowBtn(g_fileListIndex, 5, true);
-		break;
+QTableWidget 随页面拉伸
+https://blog.csdn.net/hwx802746/article/details/109202049
+https://www.cnblogs.com/david-china/p/16836652.html
+https://www.jianshu.com/p/f418495c6dd1
 
-	case DTS_Translating:
-		m_docTransPace = DTBegin;
-		if(m_pBtnAfterSelect->isHidden()) {
-			selectedDocButtonStyle(getFile(0).getFileSuffix());
+QComboBox文本居中
+	void setBoxTextAlignCenter(QComboBox* cbox) {
+		auto layoutBox = new QHBoxLayout;
+		auto layout = new QHBoxLayout();
+		auto textCenter = new QLabel(cbox);
+		textCenter->setObjectName("lineedit");
+		textCenter->setStyleSheet("QLabel#lineedit{ height: 35px;"
+		"border: 1px solid #C5E6FF; border-radius: 5px;"
+		"font-size: 10pt; font-family: \"Arial\", \"simsun\", \"Meiryo UI\";"
+		"color: #6A6A6A; background: #ffffff;}"
+		"QLabel#lineedit:hover{ color: #1890FF; }");
+		textCenter->setAutoFillBackground(true);
+		//QObject::connect(cbox, SIGNAL(currentIndexChanged(const QString&)), textCenter, SLOT(setText(const QString&)));
+		QObject::connect(cbox, SIGNAL(currentTextChanged(const QString&)), textCenter, SLOT(setText(const QString&)));
+		QObject::connect(cbox, SIGNAL(activated(const QString&)), textCenter, SLOT(setText(const QString&)));
+		layoutBox->setSpacing(0);
+		layoutBox->setMargin(0);
+		cbox->setLayout(layoutBox);
+		layoutBox->addWidget(textCenter);
+		textCenter->setAlignment(Qt::AlignCenter);
+		textCenter->setText(cbox->currentText());
+	}  //setBoxTextAlignCenter
+
+
+
+	void setBoxItemTextAlignCenter(QComboBox* cbox) {
+		QStandardItemModel* model = qobject_cast<QStandardItemModel*>(cbox->model());
+		for (int i = 0; i < model->rowCount(); i++) {
+			QStandardItem* item = model->item(i);
+			item->setTextAlignment(Qt::AlignCenter);
+			item->setSizeHint({ 0, 30 });
 		}
-		tableSetStatuBtn(g_fileListIndex, 0, IDI_TABLE_TRANSLATING);
-		ui->tableDocList->item(g_fileListIndex, 4)->setText(loadRCStr(IDS_TABLE_COLU3_TRANSLATING));
-		tableSetRemoveRowBtn(g_fileListIndex, 5, false);
-		m_docTransThread->start();
-		break;
-
-	case DTS_Translated:
-		tableSetStatuBtn(g_fileListIndex, 0, IDI_TABLE_TRANSFINISHED);
-		ui->tableDocList->item(g_fileListIndex, 4)->setText(loadRCStr(IDS_TABLE_COLU3_FINISHED));
-		setTableOpenFileButton(g_fileListIndex, 5, IDS_TABLE_COLU4_OPENFOLDER);
-		g_fileListIndex++;
-		qDebug() << "TransPage::TransDocThread_Finished::g_transStatus=2::g_fileListIndex::" << g_fileListIndex
-			<< "  --  m_fileListCount::" << m_fileList.count();
-		if(g_fileListIndex >= m_fileList.count()) {
-			transDocFinish();
-			return;
-		}
-		g_filename = m_fileList[g_fileListIndex];
-		tableSetStatuBtn(g_fileListIndex, 0, IDI_TABLE_TRANSLATING);
-		ui->tableDocList->item(g_fileListIndex, 4)->setText(loadRCStr(IDS_TABLE_COLU3_TRANSLATING));
-		selectedDocButtonStyle();
-		transDocStart();
-		break;
-
-	case DTS_TransFailed:
-		tableSetStatuBtn(g_fileListIndex, 0, IDI_TABLE_TRANSERR);
-		tableSetRemoveRowBtn(g_fileListIndex, 5, false);
-		ui->tableDocList->item(g_fileListIndex, 4)->setText(loadRCStr(IDS_TABLE_COLU3_TRANSFAILED));
-		g_fileListIndex++;
-		if(g_fileListIndex >= m_fileList.count()) {
-			transDocFinish();
-			return;
-		}
-		transDocStart();
-		break;
-
-	case DTS_ConvertioFailed:
-		tableSetStatuBtn(g_fileListIndex, 0, IDI_TABLE_TRANSERR);
-		tableSetRemoveRowBtn(g_fileListIndex, 5, false);
-		ui->tableDocList->item(g_fileListIndex, 4)->setText(loadRCStr(IDS_TABLE_COLU3_SWITCHFAIL));
-		g_fileListIndex++;
-		if(g_fileListIndex >= m_fileList.count()) {
-			transDocFinish();
-			return;
-		}
-		transDocStart();
-		break;
-
-	case DTS_LangInconsistent:
-		tableSetStatuBtn(g_fileListIndex, 0, IDI_TABLE_TRANSERR);
-		tableSetRemoveRowBtn(g_fileListIndex, 5, false);
-		ui->tableDocList->item(g_fileListIndex, 4)->setText(loadRCStr(IDS_TABLE_COLU3_LANGDICT));
-		g_fileListIndex++;
-		if(g_fileListIndex >= m_fileList.count()) {
-			transDocFinish();
-			return;
-		}
-		transDocStart();
-		break;
-
-	case DTS_ParseFailed:
-		tableSetStatuBtn(g_fileListIndex, 0, IDI_TABLE_TRANSERR);
-		tableSetRemoveRowBtn(g_fileListIndex, 5, false);
-		ui->tableDocList->item(g_fileListIndex, 4)->setText(loadRCStr(IDS_TABLE_COLU3_PARSINGFAILED));
-		g_fileListIndex++;
-		if(g_fileListIndex >= m_fileList.count()) {
-			transDocFinish();
-			return;
-		}
-		transDocStart();
-		break;
-
-	case DTS_NothingToDo:	//defaultValue do nothing
-		ui->fileType->setEnabled(true);
-		break;
-
-	case DTS_ServerErr:
-		isServerError = true;
-		ui->tableDocList->item(g_fileListIndex, 4)->setText(loadRCStr(IDS_TABLE_COLU3_SERVERERR));
-		createMsgBox(IDS_MSG_SERVERERRBODY);
-		tableSetStatuBtn(g_fileListIndex, 0, IDI_TABLE_TRANSERR);
-		tableSetRemoveRowBtn(g_fileListIndex, 5);
-
-		for(int i = g_fileListIndex + 1; i < m_fileList.count(); i++) {
-			tableSetStatuBtn(i, 0, IDI_TABLE_TRANSERR);
-			ui->tableDocList->item(i, 4)->setText(loadRCStr(IDS_TABLE_COLU3_TRANSSTOP));
-			tableSetRemoveRowBtn(i, 5);
-		}
-
-		g_transStatus = 10;
-		transDocFinish();
-		break;
-
-	case DTS_HasFileTranslating:
-		isServerError = true;
-		ui->tableDocList->item(g_fileListIndex, 4)->setText(loadRCStr(IDS_TABLE_COLU3_TRANSOCCUPY));
-		createMsgBox(IDS_MSG_CODE400BODY);
-		tableSetStatuBtn(g_fileListIndex, 0, IDI_TABLE_TRANSERR);
-		tableSetRemoveRowBtn(g_fileListIndex, 5);
-
-		for(int i = g_fileListIndex + 1; i < m_fileList.count(); i++) {
-			tableSetStatuBtn(i, 0, IDI_TABLE_TRANSERR);
-			ui->tableDocList->item(i, 4)->setText(loadRCStr(IDS_TABLE_COLU3_TRANSSTOP));
-			tableSetRemoveRowBtn(i, 5);
-		}
-
-		g_transStatus = 10;
-		transDocFinish();
-		break;
-
-	case DTS_FileUnExists:
-		tableSetStatuBtn(g_fileListIndex, 0, IDI_TABLE_TRANSERR);
-		tableSetRemoveRowBtn(g_fileListIndex, 5, false);
-		ui->tableDocList->item(g_fileListIndex, 4)->setText(loadRCStr(IDS_TABLE_COLU3_MISSINGFILE));
-		g_fileListIndex++;
-		if(g_fileListIndex >= m_fileList.count()) {
-			transDocFinish();
-			return;
-		}
-		transDocStart();
-		break;
-
-	case DTS_DownFailed:
-		tableSetStatuBtn(g_fileListIndex, 0, IDI_TABLE_TRANSERR);
-		tableSetRemoveRowBtn(g_fileListIndex, 5, false);
-		ui->tableDocList->item(g_fileListIndex, 4)->setText(loadRCStr(IDS_TABLE_COLU3_MISSINGFILE));
-		g_fileListIndex++;
-		if(g_fileListIndex >= m_fileList.count()) {
-			transDocFinish();
-			return;
-		}
-		transDocStart();
-		break;
-
-	case DTS_Unlogin:
-		isServerError = true;
-		if(theApp.m_bInit) {
-			int buttonID = createMsgBox(IDS_MSG_CHECKLOG2);
-			clearLoginStatus();
-		}
-		tableSetStatuBtn(g_fileListIndex, 0, IDI_TABLE_TRANSERR);
-		tableSetRemoveRowBtn(g_fileListIndex, 5);
-
-		for(int i = g_fileListIndex + 1; i < m_fileList.count(); i++) {
-			tableSetStatuBtn(i, 0, IDI_TABLE_TRANSERR);
-			ui->tableDocList->item(i, 4)->setText(loadRCStr(IDS_TABLE_COLU3_TRANSSTOP));
-			tableSetRemoveRowBtn(i, 5);
-		}
-
-		g_transStatus = 10;
-		transDocFinish();
-		break;
-
-	case DTS_DirEacces:
-		createMsgBox(IDS_MSG_EACCES);
-		m_docTransThread->setDirEacces(true);
-		m_docTransThread->start();
-		break;
-
-	case DTS_DownOnly:
-		tableSetStatuBtn(g_fileListIndex, 0, IDI_TABLE_TRANSLATING);
-		ui->tableDocList->item(g_fileListIndex, 4)->setText(loadRCStr(IDS_TABLE_DOWNLOADING));
-		tableSetRemoveRowBtn(g_fileListIndex, 5, false);
-		m_docTransThread->setTransFlag(3);
-		m_docTransThread->start();
-		break;
-
-	default: break;
-	}
-}
-#endif
+	}  //setBoxItemTextAlignCenter
+	m_cBoxSrc->setView(new QListView());
